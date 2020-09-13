@@ -1,5 +1,4 @@
 import json
-import logging
 import requests
 from package import Package
 from bs4 import BeautifulSoup
@@ -18,22 +17,27 @@ class NpmParser:
             json_object = json.loads(json_str)['context']
 
             if 'packageVersion' not in json_object:
-                print('Package \'' + package + '\' not found')
-                return '{}'
+                #print('Package \'' + package + '\' not found')
+                return None
 
             return json_object['packageVersion']
         except IndexError:
-            return '{}'
+            return None
 
     @staticmethod
     def getPackageVersion(package):
-        return NpmParser.getPackageJson(package)['version']
+        json_object = NpmParser.getPackageJson(package)
+
+        if json_object is not None:
+            return NpmParser.getPackageJson(package)['version']
+
+        return None
 
     @staticmethod
     def getDependenciesJson(dependence):
         json_object = NpmParser.getPackageJson(dependence)
 
-        if 'dependencies' not in json_object:
+        if json_object is not None and 'dependencies' not in json_object:
             return None
 
         return json_object['dependencies']
@@ -53,6 +57,11 @@ class NpmParser:
 
     @staticmethod
     def getPackage(name):
+        package_version = NpmParser.getPackageVersion(name)
+
+        if package_version is None:
+            return None
+
         root_package = Package(name, NpmParser.getPackageVersion(name))
         root_package.set_dependencies(NpmParser.getDependenciesList(name))
         return root_package

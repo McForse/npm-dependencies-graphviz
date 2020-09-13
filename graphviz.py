@@ -1,14 +1,20 @@
 import re
+from package import Package
 
 
 class Graphviz:
 
     @staticmethod
     def generateText(package):
-        text = 'digraph ' + str(Graphviz.normalizeName(package.get_name())) + ' {\n'
-        text += Graphviz.getPackageText(package)
-        text += '}'
-        return text
+        if type(package) is Package:
+            text = 'digraph ' + Graphviz.normalizeName(package.get_name()) + ' {\n'
+            text += Graphviz.getPackageText(package)
+            text += '}'
+            return text
+        elif package is None:
+            return 'Package not found!'
+        else:
+            return 'Passed object is not a package!'
 
     @staticmethod
     def getPackageText(package):

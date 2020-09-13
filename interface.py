@@ -22,7 +22,7 @@ package_entry.pack()
 button = Button(text='Generate', command=generate)
 button.pack()
 
-code = Text(width=80, height=40, bg='grey25', fg='white', wrap=WORD)
+code = Text(width=80, height=40, font=('Menlo', 14), bg='grey25', fg='white', wrap=WORD)
 code.configure(state='disabled')
 code.pack()
 
