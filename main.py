@@ -1,3 +1,4 @@
 from parser import NpmParser
 
-print(NpmParser.getDependencies("bootstrap-fileinput"))
+if NpmParser.getDependencies("bootstrap-fileinput"):
+    print(NpmParser.getDependencies("bootstrap-fileinput"))
