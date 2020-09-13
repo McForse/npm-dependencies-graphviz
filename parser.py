@@ -1,26 +1,23 @@
 import json
 import requests
 from package import Package
-from bs4 import BeautifulSoup
 
 
 class NpmParser:
-    url = 'https://www.npmjs.com/package/'
+    url = 'https://registry.npmjs.org/'
 
     @staticmethod
     def getPackageJson(package):
         #print('Parsing ' + package)
         try:
             page = requests.get(NpmParser.url + package)
-            soup = BeautifulSoup(page.text, 'html.parser')
-            json_str = str(soup.find_all('script')[1].contents[0])[21:]
-            json_object = json.loads(json_str)['context']
+            json_object = json.loads(page.text)
 
-            if 'packageVersion' not in json_object:
+            if 'error' in json_object or 'dist-tags' not in json_object or 'versions' not in json_object:
                 #print('Package \'' + package + '\' not found')
                 return None
 
-            return json_object['packageVersion']
+            return json_object['versions'][json_object['dist-tags']['latest']]
         except IndexError:
             return None
 
@@ -28,8 +25,8 @@ class NpmParser:
     def getPackageVersion(package):
         json_object = NpmParser.getPackageJson(package)
 
-        if json_object is not None:
-            return NpmParser.getPackageJson(package)['version']
+        if json_object is not None and 'version' in json_object:
+            return json_object['version']
 
         return None
 
@@ -37,10 +34,10 @@ class NpmParser:
     def getDependenciesJson(dependence):
         json_object = NpmParser.getPackageJson(dependence)
 
-        if json_object is not None and 'dependencies' not in json_object:
-            return None
+        if json_object is not None and 'dependencies' in json_object:
+            return json_object['dependencies']
 
-        return json_object['dependencies']
+        return None
 
     @staticmethod
     def getDependenciesList(package):
