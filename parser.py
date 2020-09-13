@@ -1,20 +1,52 @@
 import json
 import requests
+from package import Package
 from bs4 import BeautifulSoup
 
 
 class NpmParser:
-    url = "https://www.npmjs.com/package/"
-    dependence = "bootstrap-fileinput"
+    url = 'https://www.npmjs.com/package/'
 
     @staticmethod
-    def getDependencies(dependence):
-        page = requests.get(NpmParser.url + dependence)
+    def getPackageJson(package):
+        page = requests.get(NpmParser.url + package)
         soup = BeautifulSoup(page.text, 'html.parser')
         json_str = str(soup.find_all('script')[1].contents[0])[21:]
-        json_object = json.loads(json_str)["context"]
+        json_object = json.loads(json_str)['context']
 
         if 'packageVersion' not in json_object:
-            raise NameError('Package \'' + dependence + '\' not found')
+            raise NameError('Package \'' + package + '\' not found')
 
-        return json_object["packageVersion"]["dependencies"]
+        return json_object['packageVersion']
+
+    @staticmethod
+    def getPackageVersion(package):
+        return NpmParser.getPackageJson(package)['version']
+
+    @staticmethod
+    def getDependenciesJson(dependence):
+        json_object = NpmParser.getPackageJson(dependence)
+
+        if 'dependencies' not in json_object:
+            return None
+
+        return json_object['dependencies']
+
+    @staticmethod
+    def getDependenciesList(package):
+        dep_list = []
+        json_object = NpmParser.getDependenciesJson(package)
+
+        if json_object is not None:
+            for name, version in json_object.items():
+                package = Package(name, version)
+                package.set_dependencies(NpmParser.getDependenciesList(name))
+                dep_list.append(package)
+
+        return dep_list
+
+    @staticmethod
+    def getPackage(name):
+        root_package = Package(name, NpmParser.getPackageVersion(name))
+        root_package.set_dependencies(NpmParser.getDependenciesList(name))
+        return root_package

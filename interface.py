@@ -6,7 +6,7 @@ from parser import NpmParser
 def generate():
     code.configure(state='normal')
     code.delete('1.0', END)
-    code.insert(1.0, str(NpmParser.getDependencies(dependence.get())))
+    code.insert(1.0, str(NpmParser.getDependenciesJson(dependence.get())))
     code.configure(state='disabled')
 
 
