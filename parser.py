@@ -1,4 +1,5 @@
 import json
+import logging
 import requests
 from package import Package
 from bs4 import BeautifulSoup
@@ -9,15 +10,20 @@ class NpmParser:
 
     @staticmethod
     def getPackageJson(package):
-        page = requests.get(NpmParser.url + package)
-        soup = BeautifulSoup(page.text, 'html.parser')
-        json_str = str(soup.find_all('script')[1].contents[0])[21:]
-        json_object = json.loads(json_str)['context']
+        #print('Parsing ' + package)
+        try:
+            page = requests.get(NpmParser.url + package)
+            soup = BeautifulSoup(page.text, 'html.parser')
+            json_str = str(soup.find_all('script')[1].contents[0])[21:]
+            json_object = json.loads(json_str)['context']
 
-        if 'packageVersion' not in json_object:
-            raise NameError('Package \'' + package + '\' not found')
+            if 'packageVersion' not in json_object:
+                print('Package \'' + package + '\' not found')
+                return '{}'
 
-        return json_object['packageVersion']
+            return json_object['packageVersion']
+        except IndexError:
+            return '{}'
 
     @staticmethod
     def getPackageVersion(package):
